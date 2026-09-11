@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  COLLABORATOR
+}
+
+enum DealStatus {
+  LEAD
+  NEGOTIATING
+  CONTRACT_SENT
+  IN_PROGRESS
+  DELIVERED
+  INVOICED
+  PAID
+  LOST
+  CANCELLED
+}
+
+enum DealSource {
+  MANUAL
+  AI_EXTRACTED_WEB
+  AI_EXTRACTED_TELEGRAM
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  role         UserRole  @default(OWNER)
+  brands       Brand[]
+  deals        Deal[]
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("users")
+}
+
+model Brand {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  contactName  String?   @map("contact_name")
+  contactEmail String?   @map("contact_email")
+  notes        String?   @db.Text
+  deals        Deal[]
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("brands")
+}
+
+model Deal {
+  id            String     @id @default(uuid())
+  userId        String     @map("user_id")
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brandId       String     @map("brand_id")
+  brand         Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  title         String
+  status        DealStatus @default(LEAD)
+  valueAmount   BigInt     @map("value_amount")
+  valueCurrency String     @default("IDR") @map("value_currency")
+  source        DealSource @default(MANUAL)
+  notes         String?    @db.Text
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime?  @map("deleted_at") @db.Timestamptz
+
+  @@index([userId, status])
+  @@index([brandId])
+  @@map("deals")
+}
