@@ -8,6 +8,17 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter.
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const configService = app.get(ConfigService);
+  const corsOrigin = configService.get<string>(
+    'CORS_ORIGIN',
+    'http://localhost:3000',
+  );
+
+  app.enableCors({
+    origin: corsOrigin,
+    credentials: true,
+  });
+
   app.use(cookieParser());
   app.setGlobalPrefix('api/v1', { exclude: ['health'] });
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -19,7 +30,6 @@ async function bootstrap() {
     }),
   );
 
-  const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 4000);
 
   await app.listen(port);
