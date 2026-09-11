@@ -1,20 +1,31 @@
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default function DashboardPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-      <p className="mt-2 text-sm">
-        Workspace placeholder for managing brand partnerships.
-      </p>
-      <div className="mt-6">
-        <Link
-          href="/"
-          className="text-sm font-medium underline underline-offset-4"
-        >
-          Back to Home
-        </Link>
-      </div>
+    <main className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center p-6">
+      <Card className="w-full max-w-sm text-center">
+        <CardHeader>
+          <CardTitle className="text-xl">Dashboard</CardTitle>
+          <CardDescription>
+            Workspace placeholder for managing brand partnerships.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/">
+            <Button variant="outline" size="sm">
+              Back to Home
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     </main>
   );
 }

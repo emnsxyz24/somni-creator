@@ -1,26 +1,32 @@
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Somni Creator</h1>
-      <p className="mt-3 max-w-md text-base">
-        Personal operating system for managing brand deals, deliverables, and invoices.
-      </p>
-      <div className="mt-8 flex gap-4">
-        <Link
-          href="/login"
-          className="rounded-md px-4 py-2 text-sm font-medium underline underline-offset-4"
-        >
-          Go to Login
-        </Link>
-        <Link
-          href="/dashboard"
-          className="rounded-md px-4 py-2 text-sm font-medium underline underline-offset-4"
-        >
-          Go to Dashboard
-        </Link>
-      </div>
+    <main className="flex min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center p-6">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader>
+          <CardTitle className="text-2xl">Somni Creator</CardTitle>
+          <CardDescription>
+            Personal operating system for managing brand deals, deliverables, and invoices.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center gap-3">
+          <Link href="/login">
+            <Button variant="default">Go to Login</Button>
+          </Link>
+          <Link href="/dashboard">
+            <Button variant="outline">Go to Dashboard</Button>
+          </Link>
+        </CardContent>
+      </Card>
     </main>
   );
 }
