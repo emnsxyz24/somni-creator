@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { QueryProvider } from '@/components/query-provider';
 import { HeaderUser } from '@/components/header-user';
+import { MainNav } from '@/components/main-nav';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -27,9 +28,12 @@ export default function RootLayout({
         >
           <QueryProvider>
             <header className="flex h-14 items-center justify-between border-b border-border px-6">
-              <Link href="/" className="font-semibold tracking-tight">
-                Somni Creator
-              </Link>
+              <div className="flex items-center">
+                <Link href="/" className="font-semibold tracking-tight">
+                  Somni Creator
+                </Link>
+                <MainNav />
+              </div>
               <div className="flex items-center gap-3">
                 <HeaderUser />
                 <ThemeToggle />
