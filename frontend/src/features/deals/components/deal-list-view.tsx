@@ -1,7 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { Plus, Search, Briefcase, AlertCircle, TrendingUp } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Briefcase,
+  AlertCircle,
+  TrendingUp,
+  LayoutList,
+  Kanban,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { useDeals, useDeleteDeal } from '../hooks/use-deals';
 import { DealTable } from './deal-table';
+import { DealKanbanBoard } from './deal-kanban-board';
 import { DealDialog } from './deal-dialog';
 import type { Deal, DealStatus } from '../types';
 import { cn } from 'cn';
@@ -37,6 +46,7 @@ export function DealListView() {
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedStatus, setSelectedStatus] = React.useState<DealStatus | 'ALL'>('ALL');
+  const [viewMode, setViewMode] = React.useState<'table' | 'kanban'>('kanban');
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingDeal, setEditingDeal] = React.useState<Deal | null>(null);
   const [deletingDeal, setDeletingDeal] = React.useState<Deal | null>(null);
@@ -114,6 +124,37 @@ export function DealListView() {
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer',
+                viewMode === 'table'
+                  ? 'bg-background text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+              aria-label="Table View"
+            >
+              <LayoutList className="size-3.5" />
+              <span className="hidden sm:inline">Table</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('kanban')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer',
+                viewMode === 'kanban'
+                  ? 'bg-background text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+              aria-label="Kanban View"
+            >
+              <Kanban className="size-3.5" />
+              <span className="hidden sm:inline">Kanban</span>
+            </button>
+          </div>
+
           <Button onClick={handleCreate} className="gap-1.5 self-start sm:self-auto">
             <Plus className="size-4" />
             <span>New Deal</span>
@@ -249,14 +290,21 @@ export function DealListView() {
         </div>
       )}
 
-      {!isLoading && !isError && filteredDeals.length > 0 && (
-        <DealTable
-          deals={filteredDeals}
-          onEdit={handleEdit}
-          onDelete={handleDeletePrompt}
-          isDeletingId={deletingDeal?.id}
-        />
-      )}
+      {!isLoading && !isError && filteredDeals.length > 0 &&
+        (viewMode === 'kanban' ? (
+          <DealKanbanBoard
+            deals={filteredDeals}
+            onEdit={handleEdit}
+            onDelete={handleDeletePrompt}
+          />
+        ) : (
+          <DealTable
+            deals={filteredDeals}
+            onEdit={handleEdit}
+            onDelete={handleDeletePrompt}
+            isDeletingId={deletingDeal?.id}
+          />
+        ))}
 
       <DealDialog
         open={dialogOpen}
