@@ -16,6 +16,7 @@ export function MainNav() {
 
   const routes = [
     { href: '/dashboard', label: 'Dashboard' },
+    { href: '/deals', label: 'Deals' },
     { href: '/brands', label: 'Brands' },
   ];
 

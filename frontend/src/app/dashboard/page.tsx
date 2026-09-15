@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Building2 } from 'lucide-react';
+import { ArrowRight, Building2, Briefcase } from 'lucide-react';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLogout } from '@/features/auth/hooks/use-auth';
@@ -38,6 +38,24 @@ function DashboardContent() {
         </CardHeader>
 
         <CardContent className="flex flex-col gap-3">
+          <Link
+            href="/deals"
+            className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/40"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Briefcase className="size-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Deal Pipeline</p>
+                <p className="text-xs text-muted-foreground">
+                  Track partnerships, status progression, and deal values
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="size-4 text-muted-foreground" />
+          </Link>
+
           <Link
             href="/brands"
             className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/40"
