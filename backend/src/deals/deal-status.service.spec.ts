@@ -66,37 +66,64 @@ describe('DealStatusService', () => {
   });
 
   describe('Terminal states', () => {
-    const terminalStates = [
-      DealStatus.PAID,
-      DealStatus.LOST,
-      DealStatus.CANCELLED,
-    ];
+    it('should have no allowed transitions from PAID', () => {
+      expect(service.getAllowedTransitions(DealStatus.PAID)).toEqual([]);
+    });
 
-    terminalStates.forEach((state) => {
-      it(`should have no allowed transitions from ${state}`, () => {
-        expect(service.getAllowedTransitions(state)).toEqual([]);
-      });
+    it('should reject any transition from PAID', () => {
+      expect(service.isValidTransition(DealStatus.PAID, DealStatus.INVOICED)).toBe(false);
+      expect(() => service.validateTransition(DealStatus.PAID, DealStatus.INVOICED)).toThrow(
+        InvalidStatusTransitionException,
+      );
+      expect(service.isValidTransition(DealStatus.PAID, DealStatus.LEAD)).toBe(false);
+    });
+  });
 
-      it(`should reject any transition from ${state}`, () => {
-        expect(service.isValidTransition(state, DealStatus.LEAD)).toBe(false);
-        expect(() => service.validateTransition(state, DealStatus.LEAD)).toThrow(
-          InvalidStatusTransitionException,
-        );
-      });
+  describe('Backward transitions', () => {
+    it('should allow moving backward (e.g. NEGOTIATING -> LEAD)', () => {
+      expect(service.isValidTransition(DealStatus.NEGOTIATING, DealStatus.LEAD)).toBe(true);
+      expect(() => service.validateTransition(DealStatus.NEGOTIATING, DealStatus.LEAD)).not.toThrow();
+    });
+
+    it('should allow moving backward across multiple stages (e.g. DELIVERED -> LEAD)', () => {
+      expect(service.isValidTransition(DealStatus.DELIVERED, DealStatus.LEAD)).toBe(true);
+      expect(service.isValidTransition(DealStatus.DELIVERED, DealStatus.IN_PROGRESS)).toBe(true);
+      expect(() => service.validateTransition(DealStatus.DELIVERED, DealStatus.IN_PROGRESS)).not.toThrow();
+    });
+
+    it('should allow moving backward from INVOICED to DELIVERED', () => {
+      expect(service.isValidTransition(DealStatus.INVOICED, DealStatus.DELIVERED)).toBe(true);
+      expect(() => service.validateTransition(DealStatus.INVOICED, DealStatus.DELIVERED)).not.toThrow();
+    });
+  });
+
+  describe('Reopening from LOST / CANCELLED', () => {
+    it('should allow reopening LOST deal back to active pipeline stages', () => {
+      expect(service.isValidTransition(DealStatus.LOST, DealStatus.LEAD)).toBe(true);
+      expect(service.isValidTransition(DealStatus.LOST, DealStatus.NEGOTIATING)).toBe(true);
+      expect(() => service.validateTransition(DealStatus.LOST, DealStatus.LEAD)).not.toThrow();
+    });
+
+    it('should allow reopening CANCELLED deal back to active pipeline stages', () => {
+      expect(service.isValidTransition(DealStatus.CANCELLED, DealStatus.LEAD)).toBe(true);
+      expect(service.isValidTransition(DealStatus.CANCELLED, DealStatus.IN_PROGRESS)).toBe(true);
+      expect(() => service.validateTransition(DealStatus.CANCELLED, DealStatus.LEAD)).not.toThrow();
+    });
+
+    it('should NOT allow reopening LOST or CANCELLED directly to PAID', () => {
+      expect(service.isValidTransition(DealStatus.LOST, DealStatus.PAID)).toBe(false);
+      expect(service.isValidTransition(DealStatus.CANCELLED, DealStatus.PAID)).toBe(false);
+      expect(() => service.validateTransition(DealStatus.LOST, DealStatus.PAID)).toThrow(
+        InvalidStatusTransitionException,
+      );
     });
   });
 
   describe('Invalid transitions', () => {
-    it('should reject skipping stages (e.g. LEAD -> PAID)', () => {
+    it('should reject forward stage skipping (e.g. LEAD -> PAID or LEAD -> IN_PROGRESS)', () => {
       expect(service.isValidTransition(DealStatus.LEAD, DealStatus.PAID)).toBe(false);
+      expect(service.isValidTransition(DealStatus.LEAD, DealStatus.IN_PROGRESS)).toBe(false);
       expect(() => service.validateTransition(DealStatus.LEAD, DealStatus.PAID)).toThrow(
-        InvalidStatusTransitionException,
-      );
-    });
-
-    it('should reject moving backwards (e.g. NEGOTIATING -> LEAD)', () => {
-      expect(service.isValidTransition(DealStatus.NEGOTIATING, DealStatus.LEAD)).toBe(false);
-      expect(() => service.validateTransition(DealStatus.NEGOTIATING, DealStatus.LEAD)).toThrow(
         InvalidStatusTransitionException,
       );
     });
