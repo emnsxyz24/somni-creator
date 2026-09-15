@@ -30,6 +30,22 @@ enum DealSource {
   AI_EXTRACTED_TELEGRAM
 }
 
+enum DeliverableType {
+  TIKTOK
+  IG_STORY
+  IG_POST
+  IG_REEL
+  YOUTUBE_SHORT
+  YOUTUBE_VIDEO
+  OTHER
+}
+
+enum DeliverableStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -62,22 +78,40 @@ model Brand {
 }
 
 model Deal {
-  id            String     @id @default(uuid())
-  userId        String     @map("user_id")
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  brandId       String     @map("brand_id")
-  brand         Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brandId       String        @map("brand_id")
+  brand         Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
   title         String
-  status        DealStatus @default(LEAD)
-  valueAmount   BigInt     @map("value_amount")
-  valueCurrency String     @default("IDR") @map("value_currency")
-  source        DealSource @default(MANUAL)
-  notes         String?    @db.Text
-  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt     DateTime?  @map("deleted_at") @db.Timestamptz
+  status        DealStatus    @default(LEAD)
+  valueAmount   BigInt        @map("value_amount")
+  valueCurrency String        @default("IDR") @map("value_currency")
+  source        DealSource    @default(MANUAL)
+  notes         String?       @db.Text
+  deliverables  Deliverable[]
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
 
   @@index([userId, status])
   @@index([brandId])
   @@map("deals")
+}
+
+model Deliverable {
+  id          String            @id @default(uuid())
+  dealId      String            @map("deal_id")
+  deal        Deal              @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  type        DeliverableType
+  description String?           @db.Text
+  dueDate     DateTime          @map("due_date") @db.Date
+  status      DeliverableStatus @default(PENDING)
+  submittedAt DateTime?         @map("submitted_at") @db.Timestamptz
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([dealId])
+  @@index([dueDate])
+  @@map("deliverables")
 }
