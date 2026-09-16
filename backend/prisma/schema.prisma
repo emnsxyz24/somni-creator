@@ -46,16 +46,26 @@ enum DeliverableStatus {
   APPROVED
 }
 
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+}
+
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  name         String
-  role         UserRole  @default(OWNER)
-  brands       Brand[]
-  deals        Deal[]
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  id               String            @id @default(uuid())
+  email            String            @unique
+  passwordHash     String            @map("password_hash")
+  name             String
+  role             UserRole          @default(OWNER)
+  brands           Brand[]
+  deals            Deal[]
+  invoices         Invoice[]
+  invoiceSequences InvoiceSequence[]
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("users")
 }
@@ -90,6 +100,7 @@ model Deal {
   source        DealSource    @default(MANUAL)
   notes         String?       @db.Text
   deliverables  Deliverable[]
+  invoice       Invoice?
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
@@ -115,3 +126,40 @@ model Deliverable {
   @@index([dueDate])
   @@map("deliverables")
 }
+
+model Invoice {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealId        String        @unique @map("deal_id")
+  deal          Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  invoiceNumber String        @unique @map("invoice_number")
+  issuedDate    DateTime      @map("issued_date") @db.Date
+  dueDate       DateTime      @map("due_date") @db.Date
+  amount        BigInt
+  currency      String        @default("IDR")
+  status        InvoiceStatus @default(DRAFT)
+  pdfUrl        String?       @map("pdf_url")
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@map("invoices")
+}
+
+model InvoiceSequence {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  period     String
+  lastNumber Int      @default(0) @map("last_number")
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([userId, period])
+  @@index([userId, period])
+  @@map("invoice_sequences")
+}
+
