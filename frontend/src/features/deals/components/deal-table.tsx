@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Pencil, Trash2, CheckSquare } from 'lucide-react';
+import Link from 'next/link';
+import { Pencil, Trash2, CheckSquare, ExternalLink } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -10,10 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { DealStatusBadge } from './deal-status-badge';
 import { useUpdateDealStatus } from '../hooks/use-deals';
 import type { Deal, DealStatus } from '../types';
+import { cn } from 'cn';
 
 interface DealTableProps {
   deals: Deal[];
@@ -74,9 +76,12 @@ export function DealTable({
               <TableRow key={deal.id} className="transition-colors">
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="font-medium text-foreground truncate max-w-xs sm:max-w-sm">
+                    <Link
+                      href={`/deals/${deal.id}`}
+                      className="font-medium text-foreground hover:text-primary hover:underline transition-colors truncate max-w-xs sm:max-w-sm"
+                    >
                       {deal.title}
-                    </span>
+                    </Link>
                     {deal.notes && (
                       <span className="text-xs text-muted-foreground truncate max-w-xs sm:max-w-sm">
                         {deal.notes}
@@ -153,6 +158,16 @@ export function DealTable({
                         <span className="hidden lg:inline">Deliverables</span>
                       </Button>
                     )}
+                    <Link
+                      href={`/deals/${deal.id}`}
+                      className={cn(
+                        buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                      )}
+                      title="View Deal Details"
+                      aria-label={`View ${deal.title} details`}
+                    >
+                      <ExternalLink className="size-3.5" />
+                    </Link>
                     <Button
                       variant="ghost"
                       size="icon-sm"
