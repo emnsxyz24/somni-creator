@@ -24,6 +24,7 @@ import { useDeals, useDeleteDeal } from '../hooks/use-deals';
 import { DealTable } from './deal-table';
 import { DealKanbanBoard } from './deal-kanban-board';
 import { DealDialog } from './deal-dialog';
+import { DeliverablesModal } from '@/features/deliverables/components/deliverables-modal';
 import type { Deal, DealStatus } from '../types';
 import { cn } from 'cn';
 
@@ -50,6 +51,7 @@ export function DealListView() {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingDeal, setEditingDeal] = React.useState<Deal | null>(null);
   const [deletingDeal, setDeletingDeal] = React.useState<Deal | null>(null);
+  const [deliverablesDeal, setDeliverablesDeal] = React.useState<Deal | null>(null);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -296,15 +298,23 @@ export function DealListView() {
             deals={filteredDeals}
             onEdit={handleEdit}
             onDelete={handleDeletePrompt}
+            onManageDeliverables={setDeliverablesDeal}
           />
         ) : (
           <DealTable
             deals={filteredDeals}
             onEdit={handleEdit}
             onDelete={handleDeletePrompt}
+            onManageDeliverables={setDeliverablesDeal}
             isDeletingId={deletingDeal?.id}
           />
         ))}
+
+      <DeliverablesModal
+        open={Boolean(deliverablesDeal)}
+        onOpenChange={(open) => !open && setDeliverablesDeal(null)}
+        deal={deliverablesDeal}
+      />
 
       <DealDialog
         open={dialogOpen}

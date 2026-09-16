@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, CheckSquare } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -19,6 +19,7 @@ interface DealTableProps {
   deals: Deal[];
   onEdit: (deal: Deal) => void;
   onDelete: (deal: Deal) => void;
+  onManageDeliverables?: (deal: Deal) => void;
   isDeletingId?: string | null;
 }
 
@@ -26,6 +27,7 @@ export function DealTable({
   deals,
   onEdit,
   onDelete,
+  onManageDeliverables,
   isDeletingId,
 }: DealTableProps) {
   const { mutateAsync: updateStatus, isPending: isStatusPending } =
@@ -54,12 +56,12 @@ export function DealTable({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-[30%]">Deal Title</TableHead>
-            <TableHead className="w-[20%]">Brand Partner</TableHead>
-            <TableHead className="w-[15%]">Value</TableHead>
-            <TableHead className="w-[18%]">Status</TableHead>
+            <TableHead className="w-[28%]">Deal Title</TableHead>
+            <TableHead className="w-[18%]">Brand Partner</TableHead>
+            <TableHead className="w-[14%]">Value</TableHead>
+            <TableHead className="w-[16%]">Status</TableHead>
             <TableHead className="w-[10%]">Date</TableHead>
-            <TableHead className="w-[7%] text-right">Actions</TableHead>
+            <TableHead className="w-[14%] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -139,6 +141,18 @@ export function DealTable({
 
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
+                    {onManageDeliverables && (
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        onClick={() => onManageDeliverables(deal)}
+                        className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                        title="Manage Deliverables"
+                      >
+                        <CheckSquare className="size-3.5" />
+                        <span className="hidden lg:inline">Deliverables</span>
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon-sm"
