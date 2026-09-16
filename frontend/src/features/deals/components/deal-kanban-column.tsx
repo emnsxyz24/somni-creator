@@ -16,6 +16,7 @@ interface DealKanbanColumnProps {
   onDrop: (e: React.DragEvent, status: DealStatus) => void;
   onEdit: (deal: Deal) => void;
   onDelete: (deal: Deal) => void;
+  onManageDeliverables?: (deal: Deal) => void;
   onCardDragStart: (e: React.DragEvent, deal: Deal) => void;
   onCardDragEnd: (e: React.DragEvent) => void;
 }
@@ -30,6 +31,7 @@ export function DealKanbanColumn({
   onDrop,
   onEdit,
   onDelete,
+  onManageDeliverables,
   onCardDragStart,
   onCardDragEnd,
 }: DealKanbanColumnProps) {
@@ -111,6 +113,7 @@ export function DealKanbanColumn({
             deal={deal}
             onEdit={onEdit}
             onDelete={onDelete}
+            onManageDeliverables={onManageDeliverables}
             isDragging={draggingDeal?.id === deal.id}
             onDragStart={onCardDragStart}
             onDragEnd={onCardDragEnd}

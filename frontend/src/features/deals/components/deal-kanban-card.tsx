@@ -1,7 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { Pencil, Trash2, Building2, Sparkles, GripVertical } from 'lucide-react';
+import {
+  Pencil,
+  Trash2,
+  Building2,
+  Sparkles,
+  GripVertical,
+  CheckSquare,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Deal } from '../types';
 import { cn } from 'cn';
@@ -10,6 +17,7 @@ interface DealKanbanCardProps {
   deal: Deal;
   onEdit: (deal: Deal) => void;
   onDelete: (deal: Deal) => void;
+  onManageDeliverables?: (deal: Deal) => void;
   isDragging?: boolean;
   onDragStart: (e: React.DragEvent, deal: Deal) => void;
   onDragEnd: (e: React.DragEvent) => void;
@@ -19,6 +27,7 @@ export function DealKanbanCard({
   deal,
   onEdit,
   onDelete,
+  onManageDeliverables,
   isDragging,
   onDragStart,
   onDragEnd,
@@ -112,15 +121,33 @@ export function DealKanbanCard({
           {formatCurrency(deal.valueAmount, deal.valueCurrency)}
         </span>
 
-        {deal.source !== 'MANUAL' && (
-          <span
-            className="flex items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
-            title={`Sourced via ${deal.source}`}
-          >
-            <Sparkles className="size-2.5" />
-            <span>AI</span>
-          </span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {onManageDeliverables && (
+            <Button
+              variant="outline"
+              size="xs"
+              className="h-6 px-1.5 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onManageDeliverables(deal);
+              }}
+              title="Manage Deliverables"
+            >
+              <CheckSquare className="size-3" />
+              <span>Deliverables</span>
+            </Button>
+          )}
+
+          {deal.source !== 'MANUAL' && (
+            <span
+              className="flex items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+              title={`Sourced via ${deal.source}`}
+            >
+              <Sparkles className="size-2.5" />
+              <span>AI</span>
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

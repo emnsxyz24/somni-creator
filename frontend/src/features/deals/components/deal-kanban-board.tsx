@@ -10,6 +10,7 @@ interface DealKanbanBoardProps {
   deals: Deal[];
   onEdit: (deal: Deal) => void;
   onDelete: (deal: Deal) => void;
+  onManageDeliverables?: (deal: Deal) => void;
 }
 
 const PROGRESSION_COLUMNS: DealStatus[] = [
@@ -28,6 +29,7 @@ export function DealKanbanBoard({
   deals,
   onEdit,
   onDelete,
+  onManageDeliverables,
 }: DealKanbanBoardProps) {
   const { mutateAsync: updateStatus } = useUpdateDealStatus();
   const [draggingDeal, setDraggingDeal] = React.useState<Deal | null>(null);
@@ -119,6 +121,7 @@ export function DealKanbanBoard({
             onDrop={handleDrop}
             onEdit={onEdit}
             onDelete={onDelete}
+            onManageDeliverables={onManageDeliverables}
             onCardDragStart={handleCardDragStart}
             onCardDragEnd={handleCardDragEnd}
           />
@@ -140,6 +143,7 @@ export function DealKanbanBoard({
             onDrop={handleDrop}
             onEdit={onEdit}
             onDelete={onDelete}
+            onManageDeliverables={onManageDeliverables}
             onCardDragStart={handleCardDragStart}
             onCardDragEnd={handleCardDragEnd}
           />
