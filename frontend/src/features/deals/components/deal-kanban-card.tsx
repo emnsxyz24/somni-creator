@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
   Pencil,
   Trash2,
@@ -106,9 +107,15 @@ export function DealKanbanCard({
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">
-          {deal.title}
-        </h4>
+        <Link
+          href={`/deals/${deal.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="hover:underline focus-visible:underline outline-none"
+        >
+          <h4 className="text-sm font-semibold text-foreground line-clamp-2 leading-snug hover:text-primary transition-colors">
+            {deal.title}
+          </h4>
+        </Link>
         {deal.notes && (
           <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
             {deal.notes}
