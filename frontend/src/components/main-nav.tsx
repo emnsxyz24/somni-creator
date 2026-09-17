@@ -18,6 +18,7 @@ export function MainNav() {
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/deals', label: 'Deals' },
     { href: '/brands', label: 'Brands' },
+    { href: '/invoices', label: 'Invoices' },
   ];
 
   return (
