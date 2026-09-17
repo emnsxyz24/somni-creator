@@ -9,10 +9,14 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { InvoiceStatus } from '@prisma/client';
 import { InvoicesService } from './invoices.service.js';
+import { InvoicePdfService } from './invoice-pdf.service.js';
 import { CreateInvoiceDto } from './dto/create-invoice.dto.js';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
@@ -21,7 +25,10 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 @Controller('invoices')
 @UseGuards(JwtAuthGuard)
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) {}
+  constructor(
+    private readonly invoicesService: InvoicesService,
+    private readonly invoicePdfService: InvoicePdfService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -47,6 +54,23 @@ export class InvoicesController {
     @Param('id') id: string,
   ) {
     return this.invoicesService.findOne(id, userId);
+  }
+
+  @Get(':id/pdf')
+  async downloadPdf(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const invoice = await this.invoicesService.getInvoiceForPdf(id, userId);
+    const buffer = await this.invoicePdfService.generate(invoice);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="Invoice-${invoice.invoiceNumber}.pdf"`,
+    });
+
+    return new StreamableFile(buffer);
   }
 
   @Patch(':id')

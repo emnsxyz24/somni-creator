@@ -414,4 +414,68 @@ describe('InvoicesService', () => {
       expect(result).toEqual({ message: 'Invoice deleted successfully' });
     });
   });
+
+  describe('getInvoiceForPdf', () => {
+    it('should return fully hydrated invoice with relations for valid user and id', async () => {
+      const mockHydrated = {
+        ...mockInvoice,
+        user: {
+          id: mockUserId,
+          name: 'Mikaeru',
+          email: 'mikaeru@somni.dev',
+        },
+        deal: {
+          ...mockDeal,
+          deliverables: [
+            {
+              id: 'deliv-1',
+              type: 'YOUTUBE_VIDEO',
+              description: 'Integration video',
+              dueDate: new Date(),
+              status: 'APPROVED',
+            },
+          ],
+        },
+      };
+
+      prisma.invoice.findFirst.mockResolvedValue(mockHydrated);
+
+      const result = await service.getInvoiceForPdf(mockInvoiceId, mockUserId);
+
+      expect(prisma.invoice.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: mockInvoiceId,
+          userId: mockUserId,
+          deletedAt: null,
+        },
+        include: {
+          deal: {
+            include: {
+              brand: true,
+              deliverables: {
+                orderBy: { createdAt: 'asc' },
+              },
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+      expect(result).toEqual(mockHydrated);
+    });
+
+    it('should throw InvoiceNotFoundException if invoice does not exist or is deleted', async () => {
+      prisma.invoice.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.getInvoiceForPdf(mockInvoiceId, mockUserId),
+      ).rejects.toThrow(InvoiceNotFoundException);
+    });
+  });
 });
+
