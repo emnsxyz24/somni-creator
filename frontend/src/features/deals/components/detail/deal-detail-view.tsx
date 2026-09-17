@@ -24,6 +24,7 @@ import { DealStatusStepper } from './deal-status-stepper';
 import { DealDeliverablesCard } from './deal-deliverables-card';
 import { DealSummaryCard } from './deal-summary-card';
 import { DealBrandCard } from './deal-brand-card';
+import { DealInvoiceCard } from './deal-invoice-card';
 import { DealDialog } from '../deal-dialog';
 import type { DealStatus } from '../../types';
 
@@ -123,6 +124,7 @@ export function DealDetailView({ id }: DealDetailViewProps) {
           />
 
           <DealDeliverablesCard deal={deal} />
+          <DealInvoiceCard deal={deal} />
         </div>
 
         {/* Sidebar Column */}
