@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { StreamableFile } from '@nestjs/common';
+import type { Response } from 'express';
 import { InvoiceStatus } from '@prisma/client';
 import { InvoicesController } from './invoices.controller.js';
 import { DealInvoiceController } from './deal-invoice.controller.js';
 import { InvoicesService } from './invoices.service.js';
+import { InvoicePdfService } from './invoice-pdf.service.js';
 import type { CreateInvoiceDto } from './dto/create-invoice.dto.js';
 import type { UpdateInvoiceDto } from './dto/update-invoice.dto.js';
 
@@ -14,8 +17,12 @@ describe('InvoicesController & DealInvoiceController', () => {
     findAll: ReturnType<typeof vi.fn>;
     findOne: ReturnType<typeof vi.fn>;
     findByDealId: ReturnType<typeof vi.fn>;
+    getInvoiceForPdf: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
     remove: ReturnType<typeof vi.fn>;
+  };
+  let invoicePdfService: {
+    generate: ReturnType<typeof vi.fn>;
   };
 
   const mockUserId = 'user-uuid-1';
@@ -52,12 +59,18 @@ describe('InvoicesController & DealInvoiceController', () => {
       findAll: vi.fn(),
       findOne: vi.fn(),
       findByDealId: vi.fn(),
+      getInvoiceForPdf: vi.fn(),
       update: vi.fn(),
       remove: vi.fn(),
     };
 
+    invoicePdfService = {
+      generate: vi.fn(),
+    };
+
     invoicesController = new InvoicesController(
       invoicesService as unknown as InvoicesService,
+      invoicePdfService as unknown as InvoicePdfService,
     );
     dealInvoiceController = new DealInvoiceController(
       invoicesService as unknown as InvoicesService,
@@ -109,6 +122,47 @@ describe('InvoicesController & DealInvoiceController', () => {
 
         expect(invoicesService.findOne).toHaveBeenCalledWith(mockInvoiceId, mockUserId);
         expect(result).toEqual(mockInvoiceResponse);
+      });
+    });
+
+    describe('downloadPdf', () => {
+      it('should orchestrate getInvoiceForPdf and generate, set headers, and return StreamableFile', async () => {
+        const mockInvoiceWithPdf = {
+          ...mockInvoiceResponse,
+          deal: {
+            ...mockInvoiceResponse.deal,
+            deliverables: [],
+          },
+          user: {
+            id: mockUserId,
+            name: 'Mikaeru',
+            email: 'mikaeru@somni.dev',
+          },
+        };
+        const mockBuffer = Buffer.from('%PDF-1.4 test stream');
+        invoicesService.getInvoiceForPdf.mockResolvedValue(mockInvoiceWithPdf);
+        invoicePdfService.generate.mockResolvedValue(mockBuffer);
+
+        const mockRes = {
+          set: vi.fn(),
+        } as unknown as Response;
+
+        const result = await invoicesController.downloadPdf(
+          mockUserId,
+          mockInvoiceId,
+          mockRes,
+        );
+
+        expect(invoicesService.getInvoiceForPdf).toHaveBeenCalledWith(
+          mockInvoiceId,
+          mockUserId,
+        );
+        expect(invoicePdfService.generate).toHaveBeenCalledWith(mockInvoiceWithPdf);
+        expect(mockRes.set).toHaveBeenCalledWith({
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'inline; filename="Invoice-INV-202609-0001.pdf"',
+        });
+        expect(result).toBeInstanceOf(StreamableFile);
       });
     });
 

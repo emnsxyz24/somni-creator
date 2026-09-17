@@ -11,6 +11,7 @@ import { InvoiceResponse } from './dto/invoice-response.dto.js';
 import { InvoiceNotFoundException } from './exceptions/invoice-not-found.exception.js';
 import { InvoiceConflictException } from './exceptions/invoice-conflict.exception.js';
 import { InvalidInvoiceStatusException } from './exceptions/invalid-invoice-status.exception.js';
+import type { InvoiceWithPdfRelations } from './types/invoice-pdf.types.js';
 
 type InvoiceWithRelations = Invoice & {
   deal?: (Deal & {
@@ -194,6 +195,39 @@ export class InvoicesService {
     });
 
     return { message: 'Invoice deleted successfully' };
+  }
+
+  async getInvoiceForPdf(id: string, userId: string): Promise<InvoiceWithPdfRelations> {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: {
+        id,
+        userId,
+        deletedAt: null,
+      },
+      include: {
+        deal: {
+          include: {
+            brand: true,
+            deliverables: {
+              orderBy: { createdAt: 'asc' },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      throw new InvoiceNotFoundException(id);
+    }
+
+    return invoice as unknown as InvoiceWithPdfRelations;
   }
 
   async generateInvoiceNumber(userId: string, date: Date): Promise<string> {
