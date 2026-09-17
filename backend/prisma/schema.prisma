@@ -141,6 +141,7 @@ model Invoice {
   status        InvoiceStatus @default(DRAFT)
   pdfUrl        String?       @map("pdf_url")
   notes         String?       @db.Text
+  payments      Payment[]
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
@@ -162,4 +163,19 @@ model InvoiceSequence {
   @@index([userId, period])
   @@map("invoice_sequences")
 }
+
+model Payment {
+  id        String   @id @default(uuid())
+  invoiceId String   @map("invoice_id")
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount    BigInt
+  paidAt    DateTime @map("paid_at") @db.Timestamptz
+  method    String?
+  note      String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([invoiceId])
+  @@map("payments")
+}
+
 
